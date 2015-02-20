@@ -3,7 +3,10 @@
 	"version": "0.70.1",
 	"homepage": "http://threejs.org/",
 	"description": "JavaScript 3D library",
-	"main": "build/three.js",
+	"main": [
+		"build/three.js",
+		"examples/js/loaders/OBJLoader.js"
+	],
 	"keywords": [
 		"three",
 		"threejs",
@@ -22,6 +25,6 @@
 		"test",
 		"utils",
 		"LICENSE",
-		"!examples/js/loaders/OBJLoader.js"
+		"!/examples/js/loaders/OBJLoader.js"
 	]
 }
