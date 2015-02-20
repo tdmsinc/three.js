@@ -1,6 +1,6 @@
 {
 	"name": "tdmsinc-three.js",
-	"version": "0.70.1",
+	"version": "0.70.2",
 	"homepage": "http://threejs.org/",
 	"description": "JavaScript 3D library",
 	"main": [
