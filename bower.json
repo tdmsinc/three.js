@@ -21,6 +21,7 @@
 		"src",
 		"test",
 		"utils",
-		"LICENSE"
+		"LICENSE",
+		"!examples/js/loaders/OBJLoader.js"
 	]
 }
