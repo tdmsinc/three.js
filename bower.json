@@ -1,6 +1,6 @@
 {
 	"name": "three.js",
-	"version": "0.68.0",
+	"version": "0.68.1",
 	"homepage": "http://threejs.org/",
 	"description": "JavaScript 3D library",
 	"main": [
@@ -24,6 +24,7 @@
 		"src",
 		"test",
 		"utils",
-		"LICENSE"
+		"LICENSE",
+		"!/examples/js/loaders/OBJLoader.js"
 	]
 }
