@@ -1,9 +1,12 @@
 {
 	"name": "three.js",
-	"version": "0.0.68",
+	"version": "0.68.0",
 	"homepage": "http://threejs.org/",
 	"description": "JavaScript 3D library",
-	"main": "build/three.min.js",
+	"main": [
+		"build/three.min.js",
+		"examples/js/loaders/OBJLoader.js"
+	],
 	"keywords": [
 		"three",
 		"threejs",
