@@ -6,7 +6,6 @@
 	"main": [
 		"build/three.js",
 		"examples/js/loaders/OBJLoader.js",
-		"examples/js/loaders/ColladaLoader.js",
 		"examples/js/loaders/ColladaLoader2.js"
 	],
 	"keywords": [
@@ -29,7 +28,6 @@
 		"/utils",
 		"/LICENSE",
 		"!/examples/js/loaders/OBJLoader.js",
-		"!/examples/js/loaders/ColladaLoader.js",
 		"!/examples/js/loaders/ColladaLoader2.js"
 	]
 }
