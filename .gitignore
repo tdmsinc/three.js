@@ -2,3 +2,7 @@
 *.swp
 .project
 node_modules
+.idea/
+.vscode/
+npm-debug.log
+.jshintrc

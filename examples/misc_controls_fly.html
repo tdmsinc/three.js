@@ -33,7 +33,7 @@
 			b { color:orange }
 		</style>
 
-		<script src="../build/three.min.js"></script>
+		<script src="../build/three.js"></script>
 
 		<script src="js/controls/FlyControls.js"></script>
 
@@ -53,7 +53,7 @@
 
 	<body>
 
-		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - earth [fly controls]<br/><br/>
+		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - earth [fly controls]<br/><br/>
 		<b>WASD</b> move, <b>R|F</b> up | down, <b>Q|E</b> roll, <b>up|down</b> pitch, <b>left|right</b> yaw<br/>
 		</div>
 
@@ -73,9 +73,13 @@
 			var SCREEN_WIDTH  = window.innerWidth;
 
 			var container, stats;
-			var camera, controls, scene, sceneCube, renderer;
+			var camera, controls, scene, renderer;
 			var geometry, meshPlanet, meshClouds, meshMoon;
 			var dirLight, pointLight, ambientLight;
+
+			var composer;
+
+			var textureLoader = new THREE.TextureLoader();
 
 			var d, dPlanet, dMoon, dMoonVec = new THREE.Vector3();
 
@@ -108,21 +112,19 @@
 				scene.add( dirLight );
 
 				var materialNormalMap = new THREE.MeshPhongMaterial( {
-				
-					ambient: 0x000000,
+
 					specular: 0x333333,
 					shininess: 15,
-					map: THREE.ImageUtils.loadTexture( "textures/planets/earth_atmos_2048.jpg" ),
-					specularMap: THREE.ImageUtils.loadTexture( "textures/planets/earth_specular_2048.jpg" ),
-					normalMap: THREE.ImageUtils.loadTexture( "textures/planets/earth_normal_2048.jpg" ),
+					map: textureLoader.load( "textures/planets/earth_atmos_2048.jpg" ),
+					specularMap: textureLoader.load( "textures/planets/earth_specular_2048.jpg" ),
+					normalMap: textureLoader.load( "textures/planets/earth_normal_2048.jpg" ),
 					normalScale: new THREE.Vector2( 0.85, 0.85 )
-				
+
 				} );
 
 				// planet
 
 				geometry = new THREE.SphereGeometry( radius, 100, 50 );
-				geometry.computeTangents();
 
 				meshPlanet = new THREE.Mesh( geometry, materialNormalMap );
 				meshPlanet.rotation.y = 0;
@@ -132,10 +134,10 @@
 				// clouds
 
 				var materialClouds = new THREE.MeshLambertMaterial( {
-				
-					map: THREE.ImageUtils.loadTexture( "textures/planets/earth_clouds_1024.png" ),
+
+					map: textureLoader.load( "textures/planets/earth_clouds_1024.png" ),
 					transparent: true
-				
+
 				} );
 
 				meshClouds = new THREE.Mesh( geometry, materialClouds );
@@ -146,9 +148,9 @@
 				// moon
 
 				var materialMoon = new THREE.MeshPhongMaterial( {
-				
-					map: THREE.ImageUtils.loadTexture( "textures/planets/moon_1024.jpg" )
-				
+
+					map: textureLoader.load( "textures/planets/moon_1024.jpg" )
+
 				} );
 
 				meshMoon = new THREE.Mesh( geometry, materialMoon );
@@ -186,24 +188,22 @@
 
 				var stars;
 				var starsMaterials = [
-					new THREE.PointCloudMaterial( { color: 0x555555, size: 2, sizeAttenuation: false } ),
-					new THREE.PointCloudMaterial( { color: 0x555555, size: 1, sizeAttenuation: false } ),
-					new THREE.PointCloudMaterial( { color: 0x333333, size: 2, sizeAttenuation: false } ),
-					new THREE.PointCloudMaterial( { color: 0x3a3a3a, size: 1, sizeAttenuation: false } ),
-					new THREE.PointCloudMaterial( { color: 0x1a1a1a, size: 2, sizeAttenuation: false } ),
-					new THREE.PointCloudMaterial( { color: 0x1a1a1a, size: 1, sizeAttenuation: false } )
+					new THREE.PointsMaterial( { color: 0x555555, size: 2, sizeAttenuation: false } ),
+					new THREE.PointsMaterial( { color: 0x555555, size: 1, sizeAttenuation: false } ),
+					new THREE.PointsMaterial( { color: 0x333333, size: 2, sizeAttenuation: false } ),
+					new THREE.PointsMaterial( { color: 0x3a3a3a, size: 1, sizeAttenuation: false } ),
+					new THREE.PointsMaterial( { color: 0x1a1a1a, size: 2, sizeAttenuation: false } ),
+					new THREE.PointsMaterial( { color: 0x1a1a1a, size: 1, sizeAttenuation: false } )
 				];
 
 				for ( i = 10; i < 30; i ++ ) {
 
-					stars = new THREE.PointCloud( starsGeometry[ i % 2 ], starsMaterials[ i % 6 ] );
+					stars = new THREE.Points( starsGeometry[ i % 2 ], starsMaterials[ i % 6 ] );
 
 					stars.rotation.x = Math.random() * 6;
 					stars.rotation.y = Math.random() * 6;
 					stars.rotation.z = Math.random() * 6;
-
-					s = i * 10;
-					stars.scale.set( s, s, s );
+					stars.scale.setScalar( i * 10 );
 
 					stars.matrixAutoUpdate = false;
 					stars.updateMatrix();
@@ -217,15 +217,10 @@
 				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 				renderer.sortObjects = false;
 
-				renderer.autoClear = false;
-
 				container.appendChild( renderer.domElement );
 
 				stats = new Stats();
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.top = '0px';
-				stats.domElement.style.zIndex = 100;
-				container.appendChild( stats.domElement );
+				container.appendChild( stats.dom );
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
@@ -241,7 +236,7 @@
 				composer.addPass( renderModel );
 				composer.addPass( effectFilm );
 
-			};
+			}
 
 			function onWindowResize( event ) {
 
@@ -255,7 +250,7 @@
 
 				composer.reset();
 
-			};
+			}
 
 			function animate() {
 
@@ -264,7 +259,7 @@
 				render();
 				stats.update();
 
-			};
+			}
 
 			function render() {
 
@@ -295,10 +290,9 @@
 				controls.movementSpeed = 0.33 * d;
 				controls.update( delta );
 
-				renderer.clear();
 				composer.render( delta );
 
-			};
+			}
 
 		</script>
 	</body>

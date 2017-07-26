@@ -1,12 +1,12 @@
-var scene, renderer, camera, container, animation;
+var scene, renderer, camera, container, animation ,mixer;
 var hasMorph = false;
 var prevTime = Date.now();
 var clock = new THREE.Clock();
 
 function render() {
-        
+
     renderer.render( scene, camera );
- 
+
     if ( hasMorph ) {
 
         var time = Date.now();
@@ -15,17 +15,17 @@ function render() {
 
         prevTime = time;
 
-    }     
+    }
 }
 
 function animate() {
 
     requestAnimationFrame( animate );
 
-    if ( animation !== null ) {
+    if ( mixer !== null ) {
 
         var delta = clock.getDelta();
-        THREE.AnimationHandler.update( delta );
+        mixer.update(delta);
 
     }
 
@@ -47,7 +47,7 @@ function onWindowResize() {
 function setupScene( result, data ) {
 
     scene = new THREE.Scene();
-    scene.add( new THREE.GridHelper( 10, 2.5 ) );
+    scene.add( new THREE.GridHelper( 10, 8 ) );
 
 }
 
@@ -57,7 +57,7 @@ function setupLights() {
     directionalLight.position.set(1, 1, 1).normalize();
     directionalLight.intensity = 1.0;
     scene.add( directionalLight );
-    
+
     directionalLight = new THREE.DirectionalLight( 0xb8b8b8 );
     directionalLight.position.set(-1, 0.6, 0.5).normalize();
     directionalLight.intensity = 0.5;
@@ -77,12 +77,13 @@ function loadObject( data ) {
 
     var hasLights = false;
 
-    var lights = ['AmbientLight', 'DirectionalLight', 'AreaLight',
-        'PointLight', 'SpotLight', 'HemisphereLight']
+    // TODO: RectAreaLight support
+    var lights = ['AmbientLight', 'DirectionalLight',
+        'PointLight', 'SpotLight', 'RectAreaLight', 'HemisphereLight'];
 
     var cameras = ['OrthographicCamera', 'PerspectiveCamera'];
 
-    for ( i = 0; i < scene.children.length; i ++ ) {
+    for ( var i = 0; i < scene.children.length; i ++ ) {
 
         var lightIndex = lights.indexOf( scene.children[ i ].type );
 
@@ -99,6 +100,10 @@ function loadObject( data ) {
 
             camera = scene.children[ i ];
             var container = document.getElementById( 'viewport' );
+
+            orbit = new THREE.OrbitControls( camera, container );
+            orbit.addEventListener( 'change', render );
+
             var aspect = container.offsetWidth / container.offsetHeight;
             camera.aspect = aspect;
             camera.updateProjectionMatrix();
@@ -118,37 +123,38 @@ function loadObject( data ) {
 function loadGeometry( data, url ) {
 
     var loader = new THREE.JSONLoader();
-    var texturePath = loader.extractUrlBase( url );
+    var texturePath = THREE.Loader.prototype.extractUrlBase( url );
     data = loader.parse( data, texturePath );
 
     if ( data.materials === undefined ) {
-    
+
         console.log('using default material');
         data.materials = [new THREE.MeshLambertMaterial( { color: 0xb8b8b8 } )];
-    
+
     }
 
-    var material = new THREE.MeshFaceMaterial( data.materials ); 
     var mesh;
 
-    if ( data.geometry.animation !== undefined ) {
+    if ( data.geometry.animations !== undefined && data.geometry.animations.length > 0 ) {
 
         console.log( 'loading animation' );
         data.materials[ 0 ].skinning = true;
-        mesh = new THREE.SkinnedMesh( data.geometry, material, false);
+        mesh = new THREE.SkinnedMesh( data.geometry, data.materials, false );
 
-        var name = data.geometry.animation.name;
-        animation = new THREE.Animation( mesh, data.geometry.animation );
+        mixer = new THREE.AnimationMixer( mesh );
+        animation =  mixer.clipAction( mesh.geometry.animations[ 0 ] );
 
     } else {
 
-        mesh = new THREE.Mesh( data.geometry, material );
+        mesh = new THREE.Mesh( data.geometry, data.materials );
 
         if ( data.geometry.morphTargets.length > 0 ) {
 
             console.log( 'loading morph targets' );
             data.materials[ 0 ].morphTargets = true;
-            animation = new THREE.MorphAnimation( mesh );
+
+            mixer = new THREE.AnimationMixer( mesh );
+            animation = mixer.clipAction( mesh.geometry.animations[ 0 ] );
             hasMorph = true;
 
         }
@@ -191,11 +197,11 @@ function loadBufferGeometry( data ) {
 function loadData( data, url ) {
 
     if ( data.metadata.type === 'Geometry' ) {
-        
+
         loadGeometry( data, url );
-    
+
     } else if ( data.metadata.type === 'Object' ) {
-    
+
         loadObject( data );
 
     } else if ( data.metadata.type === 'BufferGeometry' ) {
@@ -222,7 +228,7 @@ function init( url ) {
     container.appendChild( renderer.domElement );
     renderer.gammaInput = true;
     renderer.gammaOutput = true;
-    
+
     var aspect = container.offsetWidth / container.offsetHeight;
     camera = new THREE.PerspectiveCamera( 50, aspect, 0.01, 50 );
     orbit = new THREE.OrbitControls( camera, container );
@@ -239,7 +245,7 @@ function init( url ) {
 
 	var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function ( x ) {
-    
+
         if ( xhr.readyState === xhr.DONE ) {
 
             if ( xhr.status === 200 || xhr.status === 0  ) {
@@ -252,8 +258,8 @@ function init( url ) {
 
             }
 
-        } 
-    
+        }
+
     };
     xhr.open( 'GET', url, true );
     xhr.withCredentials = false;

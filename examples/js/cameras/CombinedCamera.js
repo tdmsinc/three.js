@@ -15,21 +15,23 @@ THREE.CombinedCamera = function ( width, height, fov, near, far, orthoNear, orth
 
 	this.fov = fov;
 
-	this.left = -width / 2;
-	this.right = width / 2
-	this.top = height / 2;
-	this.bottom = -height / 2;
+	this.far = far;
+	this.near = near;
 
+	this.left = - width / 2;
+	this.right = width / 2;
+	this.top = height / 2;
+	this.bottom = - height / 2;
+
+	this.aspect =  width / height;
+	this.zoom = 1;
+	this.view = null;
 	// We could also handle the projectionMatrix internally, but just wanted to test nested camera objects
 
 	this.cameraO = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 	orthoNear, orthoFar );
 	this.cameraP = new THREE.PerspectiveCamera( fov, width / height, near, far );
 
-	this.zoom = 1;
-
 	this.toPerspective();
-
-	var aspect = width/height;
 
 };
 
@@ -43,7 +45,9 @@ THREE.CombinedCamera.prototype.toPerspective = function () {
 	this.near = this.cameraP.near;
 	this.far = this.cameraP.far;
 
+	this.cameraP.aspect = this.aspect;
 	this.cameraP.fov =  this.fov / this.zoom ;
+	this.cameraP.view = this.view;
 
 	this.cameraP.updateProjectionMatrix();
 
@@ -68,27 +72,16 @@ THREE.CombinedCamera.prototype.toOrthographic = function () {
 	var hyperfocus = ( near + far ) / 2;
 
 	var halfHeight = Math.tan( fov * Math.PI / 180 / 2 ) * hyperfocus;
-	var planeHeight = 2 * halfHeight;
-	var planeWidth = planeHeight * aspect;
-	var halfWidth = planeWidth / 2;
+	var halfWidth = halfHeight * aspect;
 
 	halfHeight /= this.zoom;
 	halfWidth /= this.zoom;
 
-	this.cameraO.left = -halfWidth;
+	this.cameraO.left = - halfWidth;
 	this.cameraO.right = halfWidth;
 	this.cameraO.top = halfHeight;
-	this.cameraO.bottom = -halfHeight;
-
-	// this.cameraO.left = -farHalfWidth;
-	// this.cameraO.right = farHalfWidth;
-	// this.cameraO.top = farHalfHeight;
-	// this.cameraO.bottom = -farHalfHeight;
-
-	// this.cameraO.left = this.left / this.zoom;
-	// this.cameraO.right = this.right / this.zoom;
-	// this.cameraO.top = this.top / this.zoom;
-	// this.cameraO.bottom = this.bottom / this.zoom;
+	this.cameraO.bottom = - halfHeight;
+	this.cameraO.view = this.view;
 
 	this.cameraO.updateProjectionMatrix();
 
@@ -101,14 +94,72 @@ THREE.CombinedCamera.prototype.toOrthographic = function () {
 
 };
 
+THREE.CombinedCamera.prototype.copy = function ( source ) {
+
+	THREE.Camera.prototype.copy.call( this, source );
+
+	this.fov = source.fov;
+	this.far = source.far;
+	this.near = source.near;
+
+	this.left = source.left;
+	this.right = source.right;
+	this.top = source.top;
+	this.bottom = source.bottom;
+
+	this.zoom = source.zoom;
+	this.view = source.view === null ? null : Object.assign( {}, source.view );
+	this.aspect = source.aspect;
+
+	this.cameraO.copy( source.cameraO );
+	this.cameraP.copy( source.cameraP );
+
+	this.inOrthographicMode = source.inOrthographicMode;
+	this.inPerspectiveMode = source.inPerspectiveMode;
+
+	return this;
+
+};
+
+THREE.CombinedCamera.prototype.setViewOffset = function( fullWidth, fullHeight, x, y, width, height ) {
+
+	this.view = {
+		fullWidth: fullWidth,
+		fullHeight: fullHeight,
+		offsetX: x,
+		offsetY: y,
+		width: width,
+		height: height
+	};
+
+	if ( this.inPerspectiveMode ) {
+
+		this.aspect = fullWidth / fullHeight;
+
+		this.toPerspective();
+
+	} else {
+
+		this.toOrthographic();
+
+	}
+
+};
+
+THREE.CombinedCamera.prototype.clearViewOffset = function() {
+
+	this.view = null;
+	this.updateProjectionMatrix();
+
+};
 
 THREE.CombinedCamera.prototype.setSize = function( width, height ) {
 
 	this.cameraP.aspect = width / height;
-	this.left = -width / 2;
-	this.right = width / 2
+	this.left = - width / 2;
+	this.right = width / 2;
 	this.top = height / 2;
-	this.bottom = -height / 2;
+	this.bottom = - height / 2;
 
 };
 
@@ -129,7 +180,7 @@ THREE.CombinedCamera.prototype.setFov = function( fov ) {
 
 };
 
-// For mantaining similar API with PerspectiveCamera
+// For maintaining similar API with PerspectiveCamera
 
 THREE.CombinedCamera.prototype.updateProjectionMatrix = function() {
 
@@ -148,18 +199,22 @@ THREE.CombinedCamera.prototype.updateProjectionMatrix = function() {
 
 /*
 * Uses Focal Length (in mm) to estimate and set FOV
-* 35mm (fullframe) camera is used if frame size is not specified;
+* 35mm (full frame) camera is used if frame size is not specified;
 * Formula based on http://www.bobatkins.com/photography/technical/field_of_view.html
 */
-THREE.CombinedCamera.prototype.setLens = function ( focalLength, frameHeight ) {
+THREE.CombinedCamera.prototype.setLens = function ( focalLength, filmGauge ) {
 
-	if ( frameHeight === undefined ) frameHeight = 24;
+	if ( filmGauge === undefined ) filmGauge = 35;
 
-	var fov = 2 * THREE.Math.radToDeg( Math.atan( frameHeight / ( focalLength * 2 ) ) );
+	var vExtentSlope = 0.5 * filmGauge /
+			( focalLength * Math.max( this.cameraP.aspect, 1 ) );
+
+	var fov = THREE.Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
 
 	this.setFov( fov );
 
 	return fov;
+
 };
 
 
@@ -187,8 +242,6 @@ THREE.CombinedCamera.prototype.toFrontView = function() {
 
 	// should we be modifing the matrix instead?
 
-	this.rotationAutoUpdate = false;
-
 };
 
 THREE.CombinedCamera.prototype.toBackView = function() {
@@ -196,7 +249,6 @@ THREE.CombinedCamera.prototype.toBackView = function() {
 	this.rotation.x = 0;
 	this.rotation.y = Math.PI;
 	this.rotation.z = 0;
-	this.rotationAutoUpdate = false;
 
 };
 
@@ -205,7 +257,6 @@ THREE.CombinedCamera.prototype.toLeftView = function() {
 	this.rotation.x = 0;
 	this.rotation.y = - Math.PI / 2;
 	this.rotation.z = 0;
-	this.rotationAutoUpdate = false;
 
 };
 
@@ -214,7 +265,6 @@ THREE.CombinedCamera.prototype.toRightView = function() {
 	this.rotation.x = 0;
 	this.rotation.y = Math.PI / 2;
 	this.rotation.z = 0;
-	this.rotationAutoUpdate = false;
 
 };
 
@@ -223,7 +273,6 @@ THREE.CombinedCamera.prototype.toTopView = function() {
 	this.rotation.x = - Math.PI / 2;
 	this.rotation.y = 0;
 	this.rotation.z = 0;
-	this.rotationAutoUpdate = false;
 
 };
 
@@ -232,6 +281,5 @@ THREE.CombinedCamera.prototype.toBottomView = function() {
 	this.rotation.x = Math.PI / 2;
 	this.rotation.y = 0;
 	this.rotation.z = 0;
-	this.rotationAutoUpdate = false;
 
 };

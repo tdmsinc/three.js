@@ -32,9 +32,9 @@
 	<body>
 
 		<div id="container"></div>
-		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> webgl - interactive - buffergeometry</div>
+		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - interactive - buffergeometry</div>
 
-		<script src="../build/three.min.js"></script>
+		<script src="../build/three.js"></script>
 
 		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
@@ -47,7 +47,7 @@
 
 			var camera, scene, renderer;
 
-			var raycaster, mouse, points = [];
+			var raycaster, mouse;
 
 			var mesh, line;
 
@@ -189,7 +189,7 @@
 				geometry.computeBoundingSphere();
 
 				var material = new THREE.MeshPhongMaterial( {
-						color: 0xaaaaaa, ambient: 0xaaaaaa, specular: 0xffffff, shininess: 250,
+						color: 0xaaaaaa, specular: 0xffffff, shininess: 250,
 						side: THREE.DoubleSide, vertexColors: THREE.VertexColors
 				} );
 
@@ -221,9 +221,7 @@
 				//
 
 				stats = new Stats();
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.top = '0px';
-				container.appendChild( stats.domElement );
+				container.appendChild( stats.dom );
 
 				//
 

@@ -32,8 +32,29 @@ MAPPING_TYPES = type('Mapping', (), {
     'SPHERICAL_REFLECTION': 'SphericalReflectionMapping'
 })
 
+NUMERIC = {
+    'UVMapping': 300,
+    'CubeReflectionMapping': 301,
+    'CubeRefractionMapping': 302,
+    'EquirectangularReflectionMapping': 303,
+    'EquirectangularRefractionMapping': 304,
+    'SphericalReflectionMapping': 305,
+
+    'RepeatWrapping': 1000,
+    'repeat': 1000,
+    'ClampToEdgeWrapping': 1001,
+    'MirroredRepeatWrapping': 1002,
+
+    'NearestFilter': 1003,
+    'NearestMipMapNearestFilter': 1004,
+    'NearestMipMapLinearFilter': 1005,
+    'LinearFilter': 1006,
+    'LinearMipMapNearestFilter': 1007,
+    'LinearMipMapLinearFilter': 1008
+}
 JSON = 'json'
 EXTENSION = '.%s' % JSON
+INDENT = 'indent'
 
 
 MATERIALS = 'materials'
@@ -43,78 +64,114 @@ FACES = 'faces'
 NORMALS = 'normals'
 BONES = 'bones'
 UVS = 'uvs'
+APPLY_MODIFIERS = 'applyModifiers'
 COLORS = 'colors'
 MIX_COLORS = 'mixColors'
+EXTRA_VGROUPS = 'extraVertexGroups'
+INDEX = 'index'
+DRAW_CALLS = 'drawcalls'
+DC_START = 'start'
+DC_COUNT = 'count'
+DC_INDEX = 'index'
 SCALE = 'scale'
 COMPRESSION = 'compression'
 MAPS = 'maps'
 FRAME_STEP = 'frameStep'
-ANIMATION = 'animation'
+FRAME_INDEX_AS_TIME = 'frameIndexAsTime'
+ANIMATION = 'animations'
+CLIPS="clips"
+KEYFRAMES = 'tracks'
 MORPH_TARGETS = 'morphTargets'
+MORPH_TARGETS_ANIM = 'morphTargetsAnimation'
+BLEND_SHAPES = 'blendShapes'
+POSE = 'pose'
+REST = 'rest'
 SKIN_INDICES = 'skinIndices'
 SKIN_WEIGHTS = 'skinWeights'
 LOGGING = 'logging'
 CAMERAS = 'cameras'
 LIGHTS = 'lights'
+HIERARCHY = 'hierarchy'
 FACE_MATERIALS = 'faceMaterials'
 SKINNING = 'skinning'
-COPY_TEXTURES = 'copyTextures'
+EXPORT_TEXTURES = 'exportTextures'
+EMBED_TEXTURES = 'embedTextures'
+TEXTURE_FOLDER = 'textureFolder'
 ENABLE_PRECISION = 'enablePrecision'
 PRECISION = 'precision'
 DEFAULT_PRECISION = 6
+CUSTOM_PROPERTIES = 'customProperties'
 EMBED_GEOMETRY = 'embedGeometry'
 EMBED_ANIMATION = 'embedAnimation'
+OFF = 'off'
 
 GLOBAL = 'global'
 BUFFER_GEOMETRY = 'BufferGeometry'
 GEOMETRY = 'geometry'
 GEOMETRY_TYPE = 'geometryType'
+INDEX_TYPE = 'indexType'
 
 CRITICAL = 'critical'
 ERROR = 'error'
 WARNING = 'warning'
 INFO = 'info'
 DEBUG = 'debug'
+DISABLED = 'disabled'
 
 NONE = 'None'
 MSGPACK = 'msgpack'
 
 PACK = 'pack'
 
+FLOAT_32 = 'Float32Array'
+UINT_16 = 'Uint16Array'
+UINT_32 = 'Uint32Array'
+
 INFLUENCES_PER_VERTEX = 'influencesPerVertex'
 
 EXPORT_OPTIONS = {
     FACES: True,
     VERTICES: True,
-    NORMALS: False,
-    UVS: False,
+    NORMALS: True,
+    UVS: True,
+    APPLY_MODIFIERS: True,
     COLORS: False,
+    EXTRA_VGROUPS: '',
+    INDEX_TYPE: UINT_16,
     MATERIALS: False,
     FACE_MATERIALS: False,
     SCALE: 1,
     FRAME_STEP: 1,
-    SCENE: True,
+    FRAME_INDEX_AS_TIME: False,
+    SCENE: False,
     MIX_COLORS: False,
     COMPRESSION: None,
     MAPS: False,
-    ANIMATION: False,
+    ANIMATION: OFF,
+    KEYFRAMES: False,
     BONES: False,
     SKINNING: False,
     MORPH_TARGETS: False,
+    BLEND_SHAPES: False,
     CAMERAS: False,
     LIGHTS: False,
-    COPY_TEXTURES: True,
+    HIERARCHY: False,
+    EXPORT_TEXTURES: True,
+    EMBED_TEXTURES: False,
+    TEXTURE_FOLDER: '',
     LOGGING: DEBUG,
     ENABLE_PRECISION: False,
     PRECISION: DEFAULT_PRECISION,
+    CUSTOM_PROPERTIES: False,
     EMBED_GEOMETRY: True,
     EMBED_ANIMATION: True,
-    GEOMETRY_TYPE: GEOMETRY,
-    INFLUENCES_PER_VERTEX: 2
+    GEOMETRY_TYPE: BUFFER_GEOMETRY,
+    INFLUENCES_PER_VERTEX: 2,
+    INDENT: True
 }
 
 
-FORMAT_VERSION = 4.3
+FORMAT_VERSION = 4.4
 VERSION = 'version'
 THREE = 'io_three'
 GENERATOR = 'generator'
@@ -146,11 +203,14 @@ PERSPECTIVE_CAMERA = 'PerspectiveCamera'
 ORTHOGRAPHIC_CAMERA = 'OrthographicCamera'
 AMBIENT_LIGHT = 'AmbientLight'
 DIRECTIONAL_LIGHT = 'DirectionalLight'
-AREA_LIGHT = 'AreaLight'
 POINT_LIGHT = 'PointLight'
 SPOT_LIGHT = 'SpotLight'
+# TODO (abelnation): confirm this is correct area light string for exporter
+RECT_AREA_LIGHT = 'RectAreaLight'
 HEMISPHERE_LIGHT = 'HemisphereLight'
+# TODO: RectAreaLight support
 MESH = 'Mesh'
+EMPTY = 'Empty'
 SPRITE = 'Sprite'
 
 DEFAULT_METADATA = {
@@ -164,10 +224,11 @@ UUID = 'uuid'
 MATRIX = 'matrix'
 POSITION = 'position'
 QUATERNION = 'quaternion'
-ROTATION ='rotation'
+ROTATION = 'rotation'
 SCALE = 'scale'
 
 UV = 'uv'
+UV2 = 'uv2'
 ATTRIBUTES = 'attributes'
 NORMAL = 'normal'
 ITEM_SIZE = 'itemSize'
@@ -197,9 +258,9 @@ URL = 'url'
 WRAP = 'wrap'
 REPEAT = 'repeat'
 WRAPPING = type('Wrapping', (), {
-    'REPEAT': 'RepeatWrapping',
-    'CLAMP': 'ClampToEdgeWrapping',
-    'MIRROR': 'MirroredRepeatWrapping'
+    'REPEAT': 'repeat',
+    'CLAMP': 'clamp',
+    'MIRROR': 'mirror'
 })
 ANISOTROPY = 'anisotropy'
 MAG_FILTER = 'magFilter'
@@ -210,12 +271,16 @@ IMAGE = 'image'
 
 NAME = 'name'
 PARENT = 'parent'
-
-#@TODO move to api.constants?
+LENGTH = 'length'
+FPS = 'fps'
+HIERARCHY = 'hierarchy'
 POS = 'pos'
 ROTQ = 'rotq'
+ROT = 'rot'
+SCL = 'scl'
+TIME = 'time'
+KEYS = 'keys'
 
-AMBIENT = 'ambient'
 COLOR = 'color'
 EMISSIVE = 'emissive'
 SPECULAR = 'specular'
@@ -272,6 +337,8 @@ NORMAL_BLENDING = 0
 VERTEX_COLORS_ON = 2
 VERTEX_COLORS_OFF = 0
 
+SIDE_DOUBLE = 2
+
 THREE_BASIC = 'MeshBasicMaterial'
 THREE_LAMBERT = 'MeshLambertMaterial'
 THREE_PHONG = 'MeshPhongMaterial'
@@ -280,6 +347,7 @@ INTENSITY = 'intensity'
 DISTANCE = 'distance'
 ASPECT = 'aspect'
 ANGLE = 'angle'
+DECAY = 'decayExponent'
 
 FOV = 'fov'
 ASPECT = 'aspect'
@@ -293,7 +361,6 @@ BOTTOM = 'bottom'
 
 SHADING = 'shading'
 COLOR_DIFFUSE = 'colorDiffuse'
-COLOR_AMBIENT = 'colorAmbient'
 COLOR_EMISSIVE = 'colorEmissive'
 COLOR_SPECULAR = 'colorSpecular'
 DBG_NAME = 'DbgName'
@@ -307,7 +374,9 @@ BASIC = 'basic'
 
 NORMAL_BLENDING = 'NormalBlending'
 
-DBG_COLORS = (0xeeeeee, 0xee0000, 0x00ee00, 0x0000ee, 0xeeee00, 0x00eeee, 0xee00ee)
+DBG_COLORS = (0xeeeeee, 0xee0000, 0x00ee00, 0x0000ee,
+              0xeeee00, 0x00eeee, 0xee00ee)
 
 DOUBLE_SIDED = 'doubleSided'
 
+EXPORT_SETTINGS_KEY = 'threeExportSettings'

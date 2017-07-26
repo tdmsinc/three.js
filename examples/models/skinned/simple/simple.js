@@ -21,7 +21,6 @@
 		"DbgIndex" : 0,
 		"DbgName" : "Material",
 		"blending" : "NormalBlending",
-		"colorAmbient" : [0.1569801711586143, 0.17312412519937936, 0.6400000190734865],
 		"colorDiffuse" : [0.1569801711586143, 0.17312412519937936, 0.6400000190734865],
 		"colorEmissive" : [0.0, 0.0, 0.0],
 		"colorSpecular" : [0.2535329759120941, 0.0, 0.007157782092690468],
@@ -29,7 +28,7 @@
 		"depthWrite" : true,
 		"shading" : "Lambert",
 		"specularCoef" : 50,
-		"transparency" : 1.0,
+		"opacity" : 1.0,
 		"transparent" : false,
 		"vertexColors" : false
 	}],

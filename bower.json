@@ -1,12 +1,13 @@
 {
 	"name": "tdmsinc-three.js",
-	"version": "0.70.3",
+	"version": "0.86.0",
 	"homepage": "http://threejs.org/",
 	"description": "JavaScript 3D library",
 	"main": [
 		"build/three.js",
 		"examples/js/loaders/OBJLoader.js",
-		"examples/js/loaders/ColladaLoader.js"
+		"examples/js/loaders/ColladaLoader.js",
+		"examples/js/loaders/ColladaLoader2.js"
 	],
 	"keywords": [
 		"three",
@@ -19,14 +20,16 @@
 	"ignore": [
 		"**/.*",
 		"*.md",
-		"docs",
-		"editor",
-		"examples",
-		"src",
-		"test",
-		"utils",
-		"LICENSE",
+		"/docs",
+		"/editor",
+		"/examples/*",
+		"!/examples/js",
+		"/src",
+		"/test",
+		"/utils",
+		"/LICENSE",
 		"!/examples/js/loaders/OBJLoader.js",
-		"!/examples/js/loaders/ColladaLoader.js"
+		"!/examples/js/loaders/ColladaLoader.js",
+		"!/examples/js/loaders/ColladaLoader2.js"
 	]
 }

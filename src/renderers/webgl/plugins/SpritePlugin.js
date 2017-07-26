@@ -1,11 +1,16 @@
+import { Texture } from '../../../textures/Texture';
+import { Vector3 } from '../../../math/Vector3';
+import { Quaternion } from '../../../math/Quaternion';
+
 /**
  * @author mikael emtinger / http://gomo.se/
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.SpritePlugin = function ( renderer, sprites ) {
+function SpritePlugin( renderer, sprites ) {
 
 	var gl = renderer.context;
+	var state = renderer.state;
 
 	var vertexBuffer, elementBuffer;
 	var program, attributes, uniforms;
@@ -14,11 +19,11 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 	// decompose matrixWorld
 
-	var spritePosition = new THREE.Vector3();
-	var spriteRotation = new THREE.Quaternion();
-	var spriteScale = new THREE.Vector3();
+	var spritePosition = new Vector3();
+	var spriteRotation = new Quaternion();
+	var spriteScale = new Vector3();
 
-	var init = function () {
+	function init() {
 
 		var vertices = new Float32Array( [
 			- 0.5, - 0.5,  0, 0,
@@ -71,7 +76,7 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 			alphaTest:			gl.getUniformLocation( program, 'alphaTest' )
 		};
 
-		var canvas = document.createElement( 'canvas' );
+		var canvas = document.createElementNS( 'http://www.w3.org/1999/xhtml', 'canvas' );
 		canvas.width = 8;
 		canvas.height = 8;
 
@@ -79,10 +84,10 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 		context.fillStyle = 'white';
 		context.fillRect( 0, 0, 8, 8 );
 
-		texture = new THREE.Texture( canvas );
+		texture = new Texture( canvas );
 		texture.needsUpdate = true;
 
-	};
+	}
 
 	this.render = function ( scene, camera ) {
 
@@ -98,11 +103,13 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 		gl.useProgram( program );
 
-		gl.enableVertexAttribArray( attributes.position );
-		gl.enableVertexAttribArray( attributes.uv );
+		state.initAttributes();
+		state.enableAttribute( attributes.position );
+		state.enableAttribute( attributes.uv );
+		state.disableUnusedAttributes();
 
-		gl.disable( gl.CULL_FACE );
-		gl.enable( gl.BLEND );
+		state.disable( gl.CULL_FACE );
+		state.enable( gl.BLEND );
 
 		gl.bindBuffer( gl.ARRAY_BUFFER, vertexBuffer );
 		gl.vertexAttribPointer( attributes.position, 2, gl.FLOAT, false, 2 * 8, 0 );
@@ -112,7 +119,7 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 		gl.uniformMatrix4fv( uniforms.projectionMatrix, false, camera.projectionMatrix.elements );
 
-		gl.activeTexture( gl.TEXTURE0 );
+		state.activeTexture( gl.TEXTURE0 );
 		gl.uniform1i( uniforms.map, 0 );
 
 		var oldFogType = 0;
@@ -123,7 +130,7 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 			gl.uniform3f( uniforms.fogColor, fog.color.r, fog.color.g, fog.color.b );
 
-			if ( fog instanceof THREE.Fog ) {
+			if ( fog.isFog ) {
 
 				gl.uniform1f( uniforms.fogNear, fog.near );
 				gl.uniform1f( uniforms.fogFar, fog.far );
@@ -132,7 +139,7 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 				oldFogType = 1;
 				sceneFogType = 1;
 
-			} else if ( fog instanceof THREE.FogExp2 ) {
+			} else if ( fog.isFogExp2 ) {
 
 				gl.uniform1f( uniforms.fogDensity, fog.density );
 
@@ -157,8 +164,8 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 			var sprite = sprites[ i ];
 
-			sprite._modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, sprite.matrixWorld );
-			sprite.z = - sprite._modelViewMatrix.elements[ 14 ];
+			sprite.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, sprite.matrixWorld );
+			sprite.z = - sprite.modelViewMatrix.elements[ 14 ];
 
 		}
 
@@ -173,8 +180,12 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 			var sprite = sprites[ i ];
 			var material = sprite.material;
 
+			if ( material.visible === false ) continue;
+
+			sprite.onBeforeRender( renderer, scene, camera, undefined, material, undefined );
+
 			gl.uniform1f( uniforms.alphaTest, material.alphaTest );
-			gl.uniformMatrix4fv( uniforms.modelViewMatrix, false, sprite._modelViewMatrix.elements );
+			gl.uniformMatrix4fv( uniforms.modelViewMatrix, false, sprite.modelViewMatrix.elements );
 
 			sprite.matrixWorld.decompose( spritePosition, spriteRotation, spriteScale );
 
@@ -214,33 +225,35 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 			gl.uniform1f( uniforms.rotation, material.rotation );
 			gl.uniform2fv( uniforms.scale, scale );
 
-			renderer.setBlending( material.blending, material.blendEquation, material.blendSrc, material.blendDst );
-			renderer.setDepthTest( material.depthTest );
-			renderer.setDepthWrite( material.depthWrite );
+			state.setBlending( material.blending, material.blendEquation, material.blendSrc, material.blendDst, material.blendEquationAlpha, material.blendSrcAlpha, material.blendDstAlpha, material.premultipliedAlpha );
+			state.buffers.depth.setTest( material.depthTest );
+			state.buffers.depth.setMask( material.depthWrite );
 
-			if ( material.map && material.map.image && material.map.image.width ) {
+			if ( material.map ) {
 
-				renderer.setTexture( material.map, 0 );
+				renderer.setTexture2D( material.map, 0 );
 
 			} else {
 
-				renderer.setTexture( texture, 0 );
+				renderer.setTexture2D( texture, 0 );
 
 			}
 
 			gl.drawElements( gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0 );
 
+			sprite.onAfterRender( renderer, scene, camera, undefined, material, undefined );
+
 		}
 
 		// restore gl
 
-		gl.enable( gl.CULL_FACE );
+		state.enable( gl.CULL_FACE );
 
 		renderer.resetGLState();
 
 	};
 
-	function createProgram () {
+	function createProgram() {
 
 		var program = gl.createProgram();
 
@@ -250,6 +263,8 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 		gl.shaderSource( vertexShader, [
 
 			'precision ' + renderer.getPrecision() + ' float;',
+
+			'#define SHADER_NAME ' + 'SpriteMaterial',
 
 			'uniform mat4 modelViewMatrix;',
 			'uniform mat4 projectionMatrix;',
@@ -289,6 +304,8 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 			'precision ' + renderer.getPrecision() + ' float;',
 
+			'#define SHADER_NAME ' + 'SpriteMaterial',
+
 			'uniform vec3 color;',
 			'uniform sampler2D map;',
 			'uniform float opacity;',
@@ -322,7 +339,7 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 					'} else {',
 
 						'const float LOG2 = 1.442695;',
-						'float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );',
+						'fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );',
 						'fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );',
 
 					'}',
@@ -345,11 +362,15 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 		return program;
 
-	};
+	}
 
-	function painterSortStable ( a, b ) {
+	function painterSortStable( a, b ) {
 
-		if ( a.z !== b.z ) {
+		if ( a.renderOrder !== b.renderOrder ) {
+
+			return a.renderOrder - b.renderOrder;
+
+		} else if ( a.z !== b.z ) {
 
 			return b.z - a.z;
 
@@ -359,6 +380,9 @@ THREE.SpritePlugin = function ( renderer, sprites ) {
 
 		}
 
-	};
+	}
 
-};
+}
+
+
+export { SpritePlugin };

@@ -2,7 +2,7 @@
  * @author kovacsv / http://kovacsv.hu/
  * @author mrdoob / http://mrdoob.com/
  */
- 
+
 THREE.STLExporter = function () {};
 
 THREE.STLExporter.prototype = {
@@ -14,7 +14,7 @@ THREE.STLExporter.prototype = {
 		var vector = new THREE.Vector3();
 		var normalMatrixWorld = new THREE.Matrix3();
 
-		return function ( scene ) {
+		return function parse( scene ) {
 
 			var output = '';
 
@@ -26,6 +26,12 @@ THREE.STLExporter.prototype = {
 
 					var geometry = object.geometry;
 					var matrixWorld = object.matrixWorld;
+
+					if( geometry instanceof THREE.BufferGeometry ) {
+
+						geometry = new THREE.Geometry().fromBufferGeometry( geometry );
+
+					}
 
 					if ( geometry instanceof THREE.Geometry ) {
 

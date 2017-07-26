@@ -15,7 +15,7 @@
 	</head>
 
 	<body>
-		<script src="../build/three.min.js"></script>
+		<script src="../build/three.js"></script>
 
 		<script>
 
@@ -52,9 +52,11 @@
 				var amount = 200;
 				var radius = 500;
 
-				var mapA = THREE.ImageUtils.loadTexture( "textures/sprite0.png", undefined, createHUDSprites );
-				var mapB = THREE.ImageUtils.loadTexture( "textures/sprite1.png" );
-				mapC = THREE.ImageUtils.loadTexture( "textures/sprite2.png" );
+				var textureLoader = new THREE.TextureLoader();
+
+				var mapA = textureLoader.load( "textures/sprite0.png", createHUDSprites );
+				var mapB = textureLoader.load( "textures/sprite1.png" );
+				mapC = textureLoader.load( "textures/sprite2.png" );
 
 				group = new THREE.Group();
 
@@ -66,6 +68,8 @@
 					var x = Math.random() - 0.5;
 					var y = Math.random() - 0.5;
 					var z = Math.random() - 0.5;
+
+					var material;
 
 					if ( z < 0 ) {
 
@@ -113,7 +117,7 @@
 
 				var width = material.map.image.width;
 				var height = material.map.image.height;
-				
+
 				spriteTL = new THREE.Sprite( material );
 				spriteTL.scale.set( width, height, 1 );
 				sceneOrtho.add( spriteTL );
@@ -129,16 +133,16 @@
 				spriteBR = new THREE.Sprite( material );
 				spriteBR.scale.set( width, height, 1 );
 				sceneOrtho.add( spriteBR );
-				
+
 				spriteC = new THREE.Sprite( material );
 				spriteC.scale.set( width, height, 1 );
 				sceneOrtho.add( spriteC );
 
 				updateHUDSprites();
 
-			};
+			}
 
-			function updateHUDSprites () {
+			function updateHUDSprites() {
 
 				var width = window.innerWidth / 2;
 				var height = window.innerHeight / 2;
@@ -154,7 +158,7 @@
 				spriteBR.position.set(   width - imageWidth, - height + imageHeight, 1 ); // bottom right
 				spriteC.position.set( 0, 0, 1 ); // center
 
-			};
+			}
 
 			function onWindowResize() {
 

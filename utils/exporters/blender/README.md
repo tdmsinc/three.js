@@ -8,6 +8,9 @@ The exporter (r69 and earlier) has been completely replaced. Please ensure you h
 
 ## Installation
 
+
+Recommended Blender version **>= 2.73.0**
+
 Copy the io_three folder to the scripts/addons folder. If it doesn't exist, create it. The full path is OS-dependent (see below).
 
 Once that is done, you need to activate the plugin. Open Blender preferences, look for
@@ -27,13 +30,9 @@ OR (for 2.6)
 
 ### OSX
 
-Depends on where blender.app is. Assuming you copied it to your Applications folder:
+In your user's library for user installed Blender addons:
 
-    /Applications/blender.app/Contents/Resources/2.7X/scripts/addons
-    
-OR (for 2.6)
-
-    /Applications/blender.app/Contents/MacOS/2.6X/scripts/addons
+    /Users/(myuser)/Library/Application Support/Blender/2.7X/scripts/addons
 
 ### Linux
 
@@ -44,7 +43,11 @@ By default, this should look like:
 For Ubuntu users who installed Blender 2.68 via apt-get, this is the location:
 
     /usr/lib/blender/scripts/addons
-    
+
+For Ubuntu users who installed Blender 2.7x via apt-get, this is the location:
+
+    /usr/share/blender/scripts/addons
+
 
 ## Usage
 
@@ -52,8 +55,10 @@ Activate the Import-Export addon under "User Preferences" > "Addons" and then us
 
 
 ## Enabling msgpack
+
 To enable msgpack compression copy the msgpack to scripts/modules.
 
 
 ## Importer
+
 Currently there is no import functionality available.
