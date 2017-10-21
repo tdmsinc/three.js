@@ -39,7 +39,7 @@
 
 		<script src="../build/three.js"></script>
 
-		<script src="js/loaders/ColladaLoader.js"></script>
+		<script src="js/loaders/ColladaLoader2.js"></script>
 		<script src="js/controls/OrbitControls.js"></script>
 		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
@@ -65,7 +65,8 @@
 
 				// collada
 
-				var loader = new THREE.ColladaLoader();
+				var manager = new THREE.LoadingManager();
+				var loader = new THREE.ColladaLoader(manager, true);
 				loader.options.convertUpAxis = true;
 				loader.load( './models/collada/monster/monster.dae', function ( collada ) {
 

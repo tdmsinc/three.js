@@ -3,9 +3,11 @@
  * @author Mugen87 / https://github.com/Mugen87
  */
 
-THREE.ColladaLoader = function ( manager ) {
+THREE.ColladaLoader = function ( manager, loadImage ) {
 
 	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+
+	this.loadImage = ( loadImage !== undefined ) ? loadImage : true;
 
 };
 
@@ -47,6 +49,8 @@ THREE.ColladaLoader.prototype = {
 	},
 
 	parse: function ( text, resourceDirectory ) {
+
+		var scope = this;
 
 		function getElementsByTagName( xml, name ) {
 
@@ -982,7 +986,6 @@ THREE.ColladaLoader.prototype = {
 			};
 
 			library.images[ xml.getAttribute( 'id' ) ] = data;
-
 		}
 
 		function buildImage( data ) {
@@ -1414,7 +1417,7 @@ THREE.ColladaLoader.prototype = {
 
 					case 'diffuse':
 						if ( parameter.color ) material.color.fromArray( parameter.color );
-						if ( parameter.texture ) material.map = getTexture( parameter.texture );
+						if ( parameter.texture && scope.loadImage ) material.map = getTexture( parameter.texture );
 						break;
 					case 'specular':
 						if ( parameter.color && material.specular )
